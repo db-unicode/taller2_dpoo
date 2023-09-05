@@ -1,0 +1,14 @@
+		ID PEDIDO:2
+
+Cliente:b Direccion:b
+
+
+ITEMS DEL PEDIDO:
+
+	-corral $15.000 adicion:[tomate] sin:[cebolla] calorias:1.100
+	-agua cristal sin gas $5.000 calorias:0
+
+Precio neto:$20.000
+IVA:$3.800
+Total:$23.800
+Total calorias:1.100

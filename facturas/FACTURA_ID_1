@@ -1,0 +1,13 @@
+		ID PEDIDO:1
+
+Cliente:a Direccion:a
+
+
+ITEMS DEL PEDIDO:
+
+	-corral $15.000 adicion:[lechuga] sin:[cebolla] calorias:1.000
+
+Precio neto:$15.000
+IVA:$2.850
+Total:$17.850
+Total calorias:1.000
