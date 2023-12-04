@@ -1,6 +1,9 @@
 package uniandes.dpoo.taller2.modelo;
 
 import java.util.List;
+
+import uniandes.dpoo.taller2.excepciones.ValorPedidoExcedido;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.text.MessageFormat;
@@ -32,7 +35,10 @@ public class Pedido {
 	public int getCantidadItems() {
 		return itemsPedido.size();
 	}
-	public void agregarProducto(Producto nuevoItem) {
+	public void agregarProducto(Producto nuevoItem) throws ValorPedidoExcedido{
+		if (nuevoItem.getPrecio() + this.getPrecioNetoPedido() > 150000) {
+			throw new ValorPedidoExcedido();
+		}
 		this.itemsPedido.add(nuevoItem);
 	}
 	
@@ -50,10 +56,11 @@ public class Pedido {
 	        System.out.println("Error al guardar la factura en " + ruta.toString());
 	        e.printStackTrace();
 	    }
+	    
 	}
 
 	
-	private int getPrecioNetoPedido() {
+	public int getPrecioNetoPedido() {
 		int precioNetoPedido = 0;
 		for (Producto itemPedido : this.itemsPedido) {
 			precioNetoPedido += itemPedido.getPrecio();
@@ -61,7 +68,7 @@ public class Pedido {
 		return precioNetoPedido;
 	}
 
-	private int getCaloriasTotales() {
+	public int getCaloriasTotales() {
 		int caloriasTotales = 0;
 		for (Producto itemPedido : this.itemsPedido) {
 			caloriasTotales += itemPedido.getCalorias();
@@ -70,13 +77,13 @@ public class Pedido {
 	}
 	// Creo que debería retornar un double. La implementación se apega al diagrama
 	// UML presentado.
-	private int getPrecioIVAPedido() {
+	public int getPrecioIVAPedido() {
 		double precioIVAFlotante = this.getPrecioNetoPedido() * Pedido.IVA;
 		int precioIVAEntero = (int) precioIVAFlotante;
 		return precioIVAEntero;
 	}
 
-	private int getPrecioTotalPedido() {
+	public int getPrecioTotalPedido() {
 		return this.getPrecioNetoPedido() + this.getPrecioIVAPedido();
 	}
 	
@@ -114,7 +121,7 @@ public class Pedido {
 		return textoFooterFactura;
 	}
 	
-	private String generarTextoFactura() {
+	public String generarTextoFactura() {
 		String textoHeaderFactura = this.generarHeaderFactura();
 		String textoBodyFactura = this.generarBodyFactura();
 		String textoFooterFactura = this.generarFooterFactura();

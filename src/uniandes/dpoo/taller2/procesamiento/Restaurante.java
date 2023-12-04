@@ -1,5 +1,9 @@
 package uniandes.dpoo.taller2.procesamiento;
 
+import uniandes.dpoo.taller2.excepciones.HamburguesaException;
+import uniandes.dpoo.taller2.excepciones.IngredienteRepetidoException;
+import uniandes.dpoo.taller2.excepciones.ProductoRepetidoException;
+import uniandes.dpoo.taller2.excepciones.ValorPedidoExcedido;
 import uniandes.dpoo.taller2.modelo.Bebida;
 import uniandes.dpoo.taller2.modelo.Combo;
 import uniandes.dpoo.taller2.modelo.Ingrediente;
@@ -11,8 +15,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 public class Restaurante {
@@ -39,7 +45,11 @@ public class Restaurante {
 	}
 
 	public void agregarProducto(Producto nuevoItem) {
-		pedidoEnCurso.agregarProducto(nuevoItem);
+		try {
+			pedidoEnCurso.agregarProducto(nuevoItem);
+		} catch (ValorPedidoExcedido e) {
+			e.printStackTrace();
+		}
 	}
 	public boolean existePedidoIdentico() {
         for (Map.Entry<Integer, Pedido> entrada : pedidos.entrySet()) {
@@ -134,15 +144,25 @@ public class Restaurante {
 		File archivoMenu = new File("data/menu.txt");
 		File archivoCombos = new File("data/combos.txt");
 		File archivoBebida = new File("data/bebidas.txt");
-		this.cargarIngredientes(archivoIngredientes);
-		this.cargarMenu(archivoMenu);
-		this.cargarBebidas(archivoBebida);
-		this.cargarCombos(archivoCombos);
+		try {
+			this.cargarIngredientes(archivoIngredientes);
+			this.cargarMenu(archivoMenu);
+			this.cargarBebidas(archivoBebida);
+			this.cargarCombos(archivoCombos);
+		} catch(HamburguesaException e ) {
+			e.printStackTrace();
+		}
+
 	}
 
 	public void cargarInformacionRestaurante(File archivoIngredientes, File archivoMenu, File archivoCombos) {
-		this.cargarIngredientes(archivoIngredientes);
-		this.cargarMenu(archivoMenu);
+		try {
+			this.cargarIngredientes(archivoIngredientes);
+			this.cargarMenu(archivoMenu);
+		} catch (HamburguesaException e) {
+			e.printStackTrace();
+		}
+
 		this.cargarCombos(archivoCombos);
 	}
 
@@ -166,41 +186,59 @@ public class Restaurante {
 		return pedidos;
 	}
 
-	private void cargarIngredientes(File archivoIngredientes) {
-		try (Scanner scanner = new Scanner(archivoIngredientes)) {
-			while (scanner.hasNextLine()) {
-				String linea = scanner.nextLine();
-				String[] partes = linea.split(";");
-				String nombreIngrediente = partes[0];
-				String precioIngredienteString = partes[1];
-				String caloriasIngredienteString = partes[2];
-				int precioIngrediente = Integer.parseInt(precioIngredienteString);
-				int caloriasIngrediente = Integer.parseInt(caloriasIngredienteString);
-				Ingrediente ingrediente = new Ingrediente(nombreIngrediente, precioIngrediente, caloriasIngrediente);
-				this.ingredientes.add(ingrediente);
-			}
-		} catch (FileNotFoundException e) {
-			System.err.println("Error al leer el archivo: " + e.getMessage());
-		}
+	private void cargarIngredientes(File archivoIngredientes) throws IngredienteRepetidoException {
+	    Set<String> nombresExistentes = new HashSet<>();
+
+	    try (Scanner scanner = new Scanner(archivoIngredientes)) {
+	        while (scanner.hasNextLine()) {
+	            String linea = scanner.nextLine();
+	            String[] partes = linea.split(";");
+	            String nombreIngrediente = partes[0];
+
+	            if (!nombresExistentes.add(nombreIngrediente)) {
+	                throw new IngredienteRepetidoException("Ingrediente repetido: " + nombreIngrediente);
+	            }
+
+	            String precioIngredienteString = partes[1];
+	            String caloriasIngredienteString = partes[2];
+	            int precioIngrediente = Integer.parseInt(precioIngredienteString);
+	            int caloriasIngrediente = Integer.parseInt(caloriasIngredienteString);
+
+	            Ingrediente ingrediente = new Ingrediente(nombreIngrediente, precioIngrediente, caloriasIngrediente);
+	            this.ingredientes.add(ingrediente);
+	        }
+	    } catch (FileNotFoundException e) {
+	        System.err.println("Error al leer el archivo: " + e.getMessage());
+	    }
 	}
 
-	private void cargarMenu(File archivoMenu) {
-		try (Scanner scanner = new Scanner(archivoMenu)) {
-			while (scanner.hasNextLine()) {
-				String linea = scanner.nextLine();
-				String[] partes = linea.split(";");
-				String nombreProductoMenu = partes[0];
-				String precioProductoMenuString = partes[1];
-				String caloriasProductoMenuString = partes[2];
-				int precioProducto = Integer.parseInt(precioProductoMenuString);
-				int caloriasProducto = Integer.parseInt(caloriasProductoMenuString);
-				ProductoMenu productoMenu = new ProductoMenu(nombreProductoMenu, precioProducto, caloriasProducto);
-				this.menuBase.add(productoMenu);
-			}
-		} catch (FileNotFoundException e) {
-			System.err.println("Error al leer el archivo: " + e.getMessage());
-		}
+
+	private void cargarMenu(File archivoMenu) throws ProductoRepetidoException {
+	    Set<String> nombresProductos = new HashSet<>();
+
+	    try (Scanner scanner = new Scanner(archivoMenu)) {
+	        while (scanner.hasNextLine()) {
+	            String linea = scanner.nextLine();
+	            String[] partes = linea.split(";");
+	            String nombreProductoMenu = partes[0];
+
+	            if (!nombresProductos.add(nombreProductoMenu)) {
+	                throw new ProductoRepetidoException("Producto repetido en el menú: " + nombreProductoMenu);
+	            }
+
+	            String precioProductoMenuString = partes[1];
+	            String caloriasProductoMenuString = partes[2];
+	            int precioProducto = Integer.parseInt(precioProductoMenuString);
+	            int caloriasProducto = Integer.parseInt(caloriasProductoMenuString);
+
+	            ProductoMenu productoMenu = new ProductoMenu(nombreProductoMenu, precioProducto, caloriasProducto);
+	            this.menuBase.add(productoMenu);
+	        }
+	    } catch (FileNotFoundException e) {
+	        System.err.println("Error al leer el archivo: " + e.getMessage());
+	    }
 	}
+
 	
 	private void cargarBebidas(File archivoMenu) {
 		try (Scanner scanner = new Scanner(archivoMenu)) {
